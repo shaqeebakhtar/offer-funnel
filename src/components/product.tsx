@@ -1,10 +1,14 @@
-import { Pencil, GripVertical } from 'lucide-react';
+import { Pencil, GripVertical, X } from 'lucide-react';
 
-const Product = () => {
+type ProductProps = {
+  index: number;
+};
+
+const Product = ({ index }: ProductProps) => {
   return (
     <li className="flex items-center gap-2">
       <GripVertical className="cursor-grab text-gray-600" />
-      <span className="text-sm text-gray-500">1.</span>
+      <span className="text-sm text-gray-500">{index}.</span>
       <div className="grid grid-cols-3 gap-3 py-5 w-full">
         <div className="py-2 px-3 col-span-2 border border-gray-200 shadow cursor-pointer flex items-center justify-between rounded-sm">
           <span className="text-gray-500">Select Product</span>
@@ -14,6 +18,7 @@ const Product = () => {
           Add Discount
         </button>
       </div>
+      <X strokeWidth={2.5} className="cursor-pointer text-gray-500" />
     </li>
   );
 };
