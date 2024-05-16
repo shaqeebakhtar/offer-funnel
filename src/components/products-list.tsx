@@ -28,7 +28,7 @@ const ProductsList = () => {
   return (
     <div className="space-y-6">
       <DndContext onDragEnd={handleDragEnd} id={id}>
-        <ul className="gap-3 divide-y">
+        <ul className="divide-y">
           <SortableContext items={products}>
             {products.map((product, index) => (
               <Product product={product} index={index + 1} key={index} />
@@ -39,7 +39,9 @@ const ProductsList = () => {
       <div className="flex justify-end">
         <button
           className="border-2 border-green-700 py-3 px-10 rounded text-sm font-semibold text-green-700 hover:bg-green-700 hover:text-white max-w-xs w-full"
-          onClick={() => setProducts((prev) => [...prev, {}])}
+          onClick={() =>
+            setProducts((prev) => [...prev, { id: prev.length + 1 }])
+          }
         >
           Add Product
         </button>
