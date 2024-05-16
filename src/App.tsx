@@ -5,8 +5,6 @@ import { useModal } from './store/use-modal';
 function App() {
   const open = useModal((state) => state.open);
 
-  console.log(open);
-
   return (
     <div className="bg-gray-50 min-h-screen pt-20 p-5">
       <div className="max-w-screen-lg w-full mx-auto space-y-8">

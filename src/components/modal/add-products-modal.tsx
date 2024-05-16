@@ -10,7 +10,7 @@ const AddProductsModal = () => {
         <div className="border-b py-3 px-6 flex items-center justify-between">
           <p className="font-semibold">Add Products</p>
           <X
-            className="w-5 h-5 cursor-pointer text-gray-500"
+            className="cursor-pointer text-gray-500 p-0.5 hover:border hover:bg-gray-200 hover:rounded-full"
             onClick={setOpen}
           />
         </div>
