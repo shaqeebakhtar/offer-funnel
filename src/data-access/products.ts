@@ -1,6 +1,16 @@
-export const getAllProducts = async () => {
+type GetAllProductsProps = {
+  page: number;
+  searchTerm: string;
+};
+
+export const getAllProducts = async ({
+  page = 0,
+  searchTerm = '',
+}: GetAllProductsProps) => {
   const res = await fetch(
-    `${import.meta.env.VITE_API_URL}/task/products/search`,
+    `${
+      import.meta.env.VITE_API_URL
+    }/task/products/search?search=${searchTerm}&page=${page}`,
     {
       method: 'GET',
       headers: {

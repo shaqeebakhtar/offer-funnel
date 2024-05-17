@@ -1,6 +1,6 @@
 import { X, Search, Loader } from 'lucide-react';
 import { useModal } from '../../store/use-modal';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getAllProducts } from '../../data-access/products';
 import ModalProduct from './modal-product';
 import { Product } from '../../types/product';
@@ -9,17 +9,45 @@ const AddProductsModal = () => {
   const setOpen = useModal((state) => state.setOpen);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [page, setPage] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    (async () => {
+    const fetchData = async () => {
       setIsLoading(true);
-      const data = await getAllProducts();
+      const data = await getAllProducts({ page, searchTerm });
       setAllProducts(data);
       setIsLoading(false);
-    })();
-  }, []);
+    };
 
-  console.log(allProducts);
+    fetchData();
+  }, [page, searchTerm]);
+
+  // const handleScroll = async () => {
+  //   if (
+  //     (modalRef.current &&
+  //       modalRef.current.scrollTop + modalRef.current.clientHeight !==
+  //         modalRef.current.offsetHeight) ||
+  //     isLoading
+  //   ) {
+  //     return;
+  //   }
+  //   fetchData();
+  // };
+
+  // useEffect(() => {
+  //   const modal = modalRef.current;
+  //   if (modal) {
+  //     modal.addEventListener('scroll', handleScroll);
+  //   }
+
+  //   return () => {
+  //     if (modal) {
+  //       modal.removeEventListener('scroll', handleScroll);
+  //     }
+  //   };
+  // }, [isLoading]);
 
   return (
     <div className="absolute inset-0 bg-black/25 backdrop-blur-[1px] grid place-items-center p-5">
@@ -37,15 +65,17 @@ const AddProductsModal = () => {
             type="text"
             placeholder="Search products"
             className="border-2 w-full py-2 px-4 pl-10 rounded"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.currentTarget.value)}
           />
         </div>
         {/* product list goes here */}
-        <div className="h-[55vh] overflow-y-auto">
-          {isLoading && allProducts.length === 0 ? (
+        <div className="h-[55vh] overflow-y-auto" ref={modalRef}>
+          {isLoading && allProducts?.length === 0 ? (
             <div className="w-full h-full grid place-items-center">
               <Loader className="w-5 h-5 text-gray-500 animate-spin" />
             </div>
-          ) : allProducts && allProducts.length > 0 ? (
+          ) : allProducts && allProducts?.length > 0 ? (
             <>
               {allProducts.map((product) => (
                 <ModalProduct product={product} key={product.id} />
