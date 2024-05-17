@@ -1,7 +1,7 @@
-import { useId, useState } from 'react';
-import Product from './product';
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove } from '@dnd-kit/sortable';
+import { useId, useState } from 'react';
+import Product from './product';
 
 const ProductsList = () => {
   const [products, setProducts] = useState([{ id: 1 }, { id: 2 }, { id: 3 }]);

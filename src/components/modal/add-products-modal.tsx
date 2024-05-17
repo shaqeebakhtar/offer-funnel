@@ -1,8 +1,25 @@
-import { X, Search } from 'lucide-react';
+import { X, Search, Loader } from 'lucide-react';
 import { useModal } from '../../store/use-modal';
+import { useEffect, useState } from 'react';
+import { getAllProducts } from '../../data-access/products';
+import ModalProduct from './modal-product';
+import { Product } from '../../types/product';
 
 const AddProductsModal = () => {
   const setOpen = useModal((state) => state.setOpen);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      setIsLoading(true);
+      const data = await getAllProducts();
+      setAllProducts(data);
+      setIsLoading(false);
+    })();
+  }, []);
+
+  console.log(allProducts);
 
   return (
     <div className="absolute inset-0 bg-black/25 backdrop-blur-[1px] grid place-items-center p-5">
@@ -23,7 +40,23 @@ const AddProductsModal = () => {
           />
         </div>
         {/* product list goes here */}
-        <div className="h-[55vh] overflow-y-auto"></div>
+        <div className="h-[55vh] overflow-y-auto">
+          {isLoading && allProducts.length === 0 ? (
+            <div className="w-full h-full grid place-items-center">
+              <Loader className="w-5 h-5 text-gray-500 animate-spin" />
+            </div>
+          ) : allProducts && allProducts.length > 0 ? (
+            <>
+              {allProducts.map((product) => (
+                <ModalProduct product={product} key={product.id} />
+              ))}
+            </>
+          ) : (
+            <div className="w-full h-full grid place-items-center">
+              <h3 className="text-lg font-semibold">No products found</h3>
+            </div>
+          )}
+        </div>
         <div className="w-full border-t py-3 px-6 sticky bottom-0 z-10 bg-white shadow-[0_-20px_30px_-10px_rgba(0,0,0,0.1)] flex items-center justify-between">
           <span>1 product selected</span>
           <div className="space-x-2">
