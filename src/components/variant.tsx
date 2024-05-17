@@ -25,7 +25,7 @@ const Variant = ({ variant }: VariantProps) => {
           {...attributes}
           {...listeners}
         />
-        <div className="py-2 px-3 col-span-2 border border-gray-200 shadow cursor-pointer flex items-center justify-between rounded-sm w-full">
+        <div className="py-2 px-3 col-span-2 border border-gray-200 bg-white shadow cursor-pointer flex items-center justify-between rounded-sm w-full">
           <span className="text-gray-500">Variant {id}</span>
         </div>
         <X strokeWidth={2.5} className="cursor-pointer text-gray-500" />

@@ -3,6 +3,8 @@ import { useModal } from '../store/use-modal';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import HideShowVariants from './hide-show-variants';
+import AddDiscount from './add-discount';
+import { useState } from 'react';
 
 type ProductProps = {
   product: {
@@ -13,6 +15,7 @@ type ProductProps = {
 
 const Product = ({ product, index }: ProductProps) => {
   const setOpen = useModal((state) => state.setOpen);
+  const [addDiscount, setAddDiscount] = useState(false);
 
   const id = product.id;
 
@@ -33,15 +36,22 @@ const Product = ({ product, index }: ProductProps) => {
         <span className="text-sm text-gray-500">{index}.</span>
         <div className="grid grid-cols-3 gap-3 w-full">
           <div
-            className="py-2 px-3 col-span-2 border border-gray-200 shadow cursor-pointer flex items-center justify-between rounded-sm"
+            className="py-2 px-3 col-span-2 border border-gray-200 bg-white shadow cursor-pointer flex items-center justify-between rounded-sm"
             onClick={setOpen}
           >
             <span className="text-gray-500">Select Product {id}</span>
             <Pencil className="w-4 h-4 text-green-700" />
           </div>
-          <button className="border-2 border-green-700 py-3 px-10 rounded text-sm font-semibold text-white bg-green-700 hover:bg-transparent hover:text-green-700">
-            Add Discount
-          </button>
+          {addDiscount ? (
+            <AddDiscount />
+          ) : (
+            <button
+              className="border-2 border-green-700 py-3 px-10 rounded text-sm font-semibold text-white bg-green-700 hover:bg-transparent hover:text-green-700"
+              onClick={() => setAddDiscount(!addDiscount)}
+            >
+              Add Discount
+            </button>
+          )}
         </div>
         <X strokeWidth={2.5} className="cursor-pointer text-gray-500" />
       </div>
