@@ -1,9 +1,11 @@
-import { X, Search, Loader } from 'lucide-react';
-import { useModal } from '../../store/use-modal';
+import { Loader, Search, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { getAllProducts } from '../../data-access/products';
-import ModalProduct from './modal-product';
+import { useModal } from '../../store/use-modal';
 import { Product } from '../../types/product';
+import ModalProduct from './modal-product';
+import { useSelectedProduct } from '../../store/use-selected-product';
+import { useProductList } from '../../store/use-product-list';
 
 const AddProductsModal = () => {
   const setOpen = useModal((state) => state.setOpen);
@@ -12,6 +14,31 @@ const AddProductsModal = () => {
   const [page, setPage] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const modalRef = useRef<HTMLDivElement>(null);
+
+  const selectedProduct = useSelectedProduct((state) => state.selectedProduct);
+  const setSelectedProduct = useSelectedProduct(
+    (state) => state.setSelectedProduct
+  );
+
+  const setProductList = useProductList((state) => state.setProductList);
+
+  const selectedProductListId = useProductList(
+    (state) => state.selectedProductListId
+  );
+  const productList = useProductList((state) => state.productList);
+
+  const handleProductListUpdate = () => {
+    if (selectedProduct && selectedProductListId) {
+      const updatedProductList = productList.map((item) =>
+        item.id === selectedProductListId
+          ? { ...item, product: selectedProduct }
+          : item
+      );
+      setProductList(updatedProductList);
+    }
+    setSelectedProduct(null);
+    setOpen();
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -92,11 +119,17 @@ const AddProductsModal = () => {
           <div className="space-x-2">
             <button
               className="border-2 py-1.5 px-6 font-semibold text-sm rounded text-gray-500 hover:bg-gray-200"
-              onClick={setOpen}
+              onClick={() => {
+                setOpen();
+                setSelectedProduct(null);
+              }}
             >
               Cancel
             </button>
-            <button className="border-2 border-green-700 py-1.5 px-6 font-semibold text-sm rounded text-white bg-green-700 hover:bg-green-800">
+            <button
+              className="border-2 border-green-700 py-1.5 px-6 font-semibold text-sm rounded text-white bg-green-700 hover:bg-green-800"
+              onClick={handleProductListUpdate}
+            >
               Add
             </button>
           </div>

@@ -1,12 +1,30 @@
-import { ChevronDown, ChevronUp } from 'lucide-react';
-import { useId, useState } from 'react';
-import Variant from './variant';
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove } from '@dnd-kit/sortable';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useEffect, useId, useState } from 'react';
+import Variant from './variant';
 
-const HideShowVariants = () => {
+type HideShowVariantsProps = {
+  productVariants: string[] | { id: number; title: string }[];
+  productId: number;
+};
+
+const HideShowVariants = ({
+  productVariants,
+  productId,
+}: HideShowVariantsProps) => {
   const [showVariants, setShowVariants] = useState(false);
-  const [variants, setVariants] = useState([{ id: 1 }, { id: 2 }, { id: 3 }]);
+  const [variants, setVariants] = useState<{ id: number; title: string }[]>([]);
+
+  useEffect(() => {
+    setVariants(
+      productVariants.map((variant, index) =>
+        typeof variant === 'string'
+          ? { id: index + 1, title: variant }
+          : variant
+      )
+    );
+  }, [productVariants]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -47,7 +65,13 @@ const HideShowVariants = () => {
           <ul className="space-y-4 w-[90%]">
             <SortableContext items={variants}>
               {variants.map((variant, index) => (
-                <Variant variant={variant} key={index} />
+                <Variant
+                  variant={variant}
+                  variants={variants}
+                  productId={productId}
+                  totalVariants={variants.length}
+                  key={index}
+                />
               ))}
             </SortableContext>
           </ul>

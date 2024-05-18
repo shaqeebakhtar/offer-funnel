@@ -1,10 +1,13 @@
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove } from '@dnd-kit/sortable';
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import Product from './product';
+import { useProductList } from '../store/use-product-list';
 
 const ProductsList = () => {
-  const [products, setProducts] = useState([{ id: 1 }, { id: 2 }, { id: 3 }]);
+  const productList = useProductList((state) => state.productList);
+  const setProductList = useProductList((state) => state.setProductList);
+  const [products, setProducts] = useState(productList);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -20,8 +23,17 @@ const ProductsList = () => {
 
         return arrayMove(products, oldIndex, newIndex);
       });
+      setProductList(products);
     }
   };
+
+  useEffect(() => {
+    setProducts(productList);
+  }, [productList]);
+
+  useEffect(() => {
+    setProductList(products);
+  }, [products, setProductList]);
 
   const id = useId();
 
@@ -31,7 +43,12 @@ const ProductsList = () => {
         <ul className="divide-y">
           <SortableContext items={products}>
             {products.map((product, index) => (
-              <Product product={product} index={index + 1} key={index} />
+              <Product
+                product={product}
+                totalProducts={products.length}
+                index={index + 1}
+                key={index}
+              />
             ))}
           </SortableContext>
         </ul>
@@ -39,9 +56,9 @@ const ProductsList = () => {
       <div className="flex justify-end">
         <button
           className="border-2 border-green-700 py-3 px-10 rounded text-sm font-semibold text-green-700 hover:bg-green-700 hover:text-white max-w-xs w-full"
-          onClick={() =>
-            setProducts((prev) => [...prev, { id: prev.length + 1 }])
-          }
+          onClick={() => {
+            setProducts((prev) => [...prev, { id: prev.length + 1 }]);
+          }}
         >
           Add Product
         </button>
@@ -51,33 +68,3 @@ const ProductsList = () => {
 };
 
 export default ProductsList;
-
-/*
-  {
-        "id": 77,
-        "title": "Fog Linen Chambray Towel - Beige Stripe",
-        "variants": [
-            {
-                "id": 1,
-                "product_id": 77,
-                "title": "XS / Silver",
-                "price": "49"
-            },
-            {
-                "id": 2,
-                "product_id": 77,
-                "title": "S / Silver",
-                "price": "49"
-            },
-            {
-                "id": 3,
-                "product_id": 77,
-                "title": "M / Silver",
-                "price": "49"
-            }
-        ],
-        "discount": 20,
-        "discount_type": "flat"
-        
-    }
-*/

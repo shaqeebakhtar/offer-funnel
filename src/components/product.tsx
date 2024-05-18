@@ -1,20 +1,32 @@
-import { Pencil, GripVertical, X } from 'lucide-react';
-import { useModal } from '../store/use-modal';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import HideShowVariants from './hide-show-variants';
-import AddDiscount from './add-discount';
+import { GripVertical, Pencil, X } from 'lucide-react';
 import { useState } from 'react';
+import { useModal } from '../store/use-modal';
+import { useProductList } from '../store/use-product-list';
+import AddDiscount from './add-discount';
+import HideShowVariants from './hide-show-variants';
 
 type ProductProps = {
+  totalProducts: number;
   product: {
     id: number;
+    product?: {
+      title?: string;
+      variants?: string[] | { id: number; title: string }[];
+    };
   };
   index: number;
 };
 
-const Product = ({ product, index }: ProductProps) => {
+const Product = ({ product, index, totalProducts }: ProductProps) => {
   const setOpen = useModal((state) => state.setOpen);
+  const setSelectedProductListId = useProductList(
+    (state) => state.setSelectedProductListId
+  );
+  const productList = useProductList((state) => state.productList);
+  const setProductList = useProductList((state) => state.setProductList);
+
   const [addDiscount, setAddDiscount] = useState(false);
 
   const id = product.id;
@@ -23,6 +35,12 @@ const Product = ({ product, index }: ProductProps) => {
 
   const style = {
     transform: CSS.Transform.toString(transform),
+  };
+
+  const removeProduct = () => {
+    const newProductList = productList.filter((product) => product.id !== id);
+
+    setProductList(newProductList);
   };
 
   return (
@@ -37,9 +55,22 @@ const Product = ({ product, index }: ProductProps) => {
         <div className="grid grid-cols-3 gap-3 w-full">
           <div
             className="py-2 px-3 col-span-2 border border-gray-200 bg-white shadow cursor-pointer flex items-center justify-between rounded-sm"
-            onClick={setOpen}
+            onClick={() => {
+              setOpen();
+              setSelectedProductListId(product.id);
+            }}
           >
-            <span className="text-gray-500">Select Product {id}</span>
+            <span
+              className={
+                product.product?.title
+                  ? 'text-gray-700 font-semibold'
+                  : 'text-gray-500'
+              }
+            >
+              {product.product?.title
+                ? product.product?.title
+                : 'Select Product'}
+            </span>
             <Pencil className="w-4 h-4 text-green-700" />
           </div>
           {addDiscount ? (
@@ -53,9 +84,20 @@ const Product = ({ product, index }: ProductProps) => {
             </button>
           )}
         </div>
-        <X strokeWidth={2.5} className="cursor-pointer text-gray-500" />
+        {totalProducts > 1 && (
+          <X
+            strokeWidth={2.5}
+            className="cursor-pointer text-gray-500"
+            onClick={removeProduct}
+          />
+        )}
       </div>
-      <HideShowVariants />
+      {product.product?.variants && (
+        <HideShowVariants
+          productVariants={product.product?.variants}
+          productId={product.id}
+        />
+      )}
     </li>
   );
 };
