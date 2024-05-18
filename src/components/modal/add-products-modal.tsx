@@ -11,9 +11,11 @@ const AddProductsModal = () => {
   const setOpen = useModal((state) => state.setOpen);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [page, setPage] = useState(0);
+  const [currPage, setCurrPage] = useState(0);
+  const [prevPage, setPrevPage] = useState(-10);
+  const [lastProduct, setLastProduct] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const modalRef = useRef<HTMLDivElement>(null);
+  const productListRef = useRef<HTMLDivElement>(null);
 
   const selectedProduct = useSelectedProduct((state) => state.selectedProduct);
   const setSelectedProduct = useSelectedProduct(
@@ -43,38 +45,35 @@ const AddProductsModal = () => {
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      const data = await getAllProducts({ page, searchTerm });
-      setAllProducts(data);
+      const data = await getAllProducts({ page: currPage, searchTerm });
+      if (!data?.length) {
+        setLastProduct(true);
+        setIsLoading(false);
+        return;
+      }
+      setPrevPage(currPage);
+      if (searchTerm !== '' && currPage === 0) {
+        setAllProducts(data);
+      } else {
+        setAllProducts([...allProducts, ...data]);
+      }
       setIsLoading(false);
     };
 
-    fetchData();
-  }, [page, searchTerm]);
+    if ((!lastProduct && prevPage !== currPage) || searchTerm !== '') {
+      fetchData();
+    }
+  }, [allProducts, currPage, lastProduct, prevPage, searchTerm]);
 
-  // const handleScroll = async () => {
-  //   if (
-  //     (modalRef.current &&
-  //       modalRef.current.scrollTop + modalRef.current.clientHeight !==
-  //         modalRef.current.offsetHeight) ||
-  //     isLoading
-  //   ) {
-  //     return;
-  //   }
-  //   fetchData();
-  // };
+  const handleScroll = () => {
+    if (productListRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = productListRef.current;
 
-  // useEffect(() => {
-  //   const modal = modalRef.current;
-  //   if (modal) {
-  //     modal.addEventListener('scroll', handleScroll);
-  //   }
-
-  //   return () => {
-  //     if (modal) {
-  //       modal.removeEventListener('scroll', handleScroll);
-  //     }
-  //   };
-  // }, [isLoading]);
+      if (scrollTop + clientHeight + 1.5 >= scrollHeight) {
+        setCurrPage(currPage + 10);
+      }
+    }
+  };
 
   return (
     <div className="absolute inset-0 bg-black/25 backdrop-blur-[1px] grid place-items-center p-5">
@@ -93,11 +92,18 @@ const AddProductsModal = () => {
             placeholder="Search products"
             className="border-2 w-full py-2 px-4 pl-10 rounded"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.currentTarget.value)}
+            onChange={(e) => {
+              setSearchTerm(e.currentTarget.value);
+              setCurrPage(0);
+            }}
           />
         </div>
         {/* product list goes here */}
-        <div className="h-[55vh] overflow-y-auto" ref={modalRef}>
+        <div
+          className="h-[55vh] overflow-y-auto"
+          ref={productListRef}
+          onScroll={handleScroll}
+        >
           {isLoading && allProducts?.length === 0 ? (
             <div className="w-full h-full grid place-items-center">
               <Loader className="w-5 h-5 text-gray-500 animate-spin" />

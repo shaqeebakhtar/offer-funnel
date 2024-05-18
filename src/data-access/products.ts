@@ -1,6 +1,6 @@
 type GetAllProductsProps = {
   page: number;
-  searchTerm: string;
+  searchTerm?: string;
 };
 
 export const getAllProducts = async ({
