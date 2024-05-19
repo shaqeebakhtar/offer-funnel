@@ -15,6 +15,8 @@ const AddProductsModal = () => {
   const [prevPage, setPrevPage] = useState(-10);
   const [lastProduct, setLastProduct] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [prevSearchTerm, setPrevSearchTerm] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
   const productListRef = useRef<HTMLDivElement>(null);
 
   const selectedProduct = useSelectedProduct((state) => state.selectedProduct);
@@ -52,18 +54,34 @@ const AddProductsModal = () => {
         return;
       }
       setPrevPage(currPage);
-      if (searchTerm !== '' && currPage === 0) {
+      if (
+        searchTerm !== '' ||
+        (prevSearchTerm !== '' && searchTerm === '') ||
+        currPage === 0
+      ) {
         setAllProducts(data);
+        setPrevSearchTerm(searchTerm);
       } else {
         setAllProducts([...allProducts, ...data]);
       }
       setIsLoading(false);
     };
 
-    if ((!lastProduct && prevPage !== currPage) || searchTerm !== '') {
+    if (
+      (!lastProduct && prevPage !== currPage) ||
+      searchTerm !== '' ||
+      (prevSearchTerm !== '' && searchTerm === '')
+    ) {
       fetchData();
     }
-  }, [allProducts, currPage, lastProduct, prevPage, searchTerm]);
+  }, [
+    allProducts,
+    currPage,
+    lastProduct,
+    prevPage,
+    prevSearchTerm,
+    searchTerm,
+  ]);
 
   const handleScroll = () => {
     if (productListRef.current) {
@@ -96,6 +114,8 @@ const AddProductsModal = () => {
               setSearchTerm(e.currentTarget.value);
               setCurrPage(0);
             }}
+            onKeyDown={() => setIsTyping(true)}
+            onKeyUp={() => setIsTyping(false)}
           />
         </div>
         {/* product list goes here */}
@@ -104,7 +124,7 @@ const AddProductsModal = () => {
           ref={productListRef}
           onScroll={handleScroll}
         >
-          {isLoading && allProducts?.length === 0 ? (
+          {(isLoading && allProducts?.length === 0) || isTyping ? (
             <div className="w-full h-full grid place-items-center">
               <Loader className="w-5 h-5 text-gray-500 animate-spin" />
             </div>
