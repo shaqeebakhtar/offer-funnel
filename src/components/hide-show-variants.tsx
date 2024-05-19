@@ -3,9 +3,15 @@ import { SortableContext, arrayMove } from '@dnd-kit/sortable';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useEffect, useId, useState } from 'react';
 import Variant from './variant';
+import { useProductList } from '../store/use-product-list';
 
 type HideShowVariantsProps = {
-  productVariants: string[] | { id: number; title: string }[];
+  productVariants: {
+    id: number;
+    title: string;
+    price: string;
+    quantity: number;
+  }[];
   productId: number;
 };
 
@@ -14,17 +20,13 @@ const HideShowVariants = ({
   productId,
 }: HideShowVariantsProps) => {
   const [showVariants, setShowVariants] = useState(false);
-  const [variants, setVariants] = useState<{ id: number; title: string }[]>([]);
-
-  useEffect(() => {
-    setVariants(
-      productVariants.map((variant, index) =>
-        typeof variant === 'string'
-          ? { id: index + 1, title: variant }
-          : variant
-      )
+  const [variants, setVariants] =
+    useState<{ id: number; title: string; price: string; quantity: number }[]>(
+      productVariants
     );
-  }, [productVariants]);
+
+  const productList = useProductList((state) => state.productList);
+  const setProductList = useProductList((state) => state.setProductList);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -38,10 +40,35 @@ const HideShowVariants = ({
           variants.filter((variant) => variant.id === Number(over?.id))[0]
         );
 
-        return arrayMove(variants, oldIndex, newIndex);
+        const updatedVariants = arrayMove(variants, oldIndex, newIndex);
+
+        const updatedProductList = productList.map((product) => {
+          if (
+            product.id === productId &&
+            product.product &&
+            product.product.variants
+          ) {
+            return {
+              ...product,
+              product: {
+                ...product.product,
+                variants: updatedVariants,
+              },
+            };
+          }
+          return product;
+        });
+
+        setProductList(updatedProductList);
+
+        return updatedVariants;
       });
     }
   };
+
+  useEffect(() => {
+    setVariants(productVariants);
+  }, [productVariants, productList]);
 
   const id = useId();
 
@@ -67,7 +94,7 @@ const HideShowVariants = ({
               {variants.map((variant, index) => (
                 <Variant
                   variant={variant}
-                  variants={variants}
+                  // variants={variants}
                   productId={productId}
                   totalVariants={variants.length}
                   key={index}

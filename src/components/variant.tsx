@@ -7,15 +7,17 @@ type VariantProps = {
   variant: {
     id: number;
     title: string;
+    price: string;
+    quantity: number;
   };
-  variants: { id: number; title: string }[];
+  // variants: { id: number; title: string; price: string; quantity: number }[];
   totalVariants: number;
   productId: number;
 };
 
 const Variant = ({
   variant,
-  variants,
+  // variants,
   totalVariants,
   productId,
 }: VariantProps) => {
@@ -32,16 +34,20 @@ const Variant = ({
 
   const removeVariant = () => {
     const updatedProductList = productList.map((product) =>
-      product.id === productId
+      product.id === productId && product.product && product.product.variants
         ? {
             ...product,
             product: {
               ...product.product,
-              variants: variants.filter((variant) => variant.id !== id),
+              variants: product?.product?.variants.filter(
+                (variant) => variant.id !== id
+              ),
             },
           }
         : product
     );
+
+    console.log(updatedProductList);
 
     setProductList(updatedProductList);
   };

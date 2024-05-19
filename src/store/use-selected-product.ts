@@ -1,8 +1,14 @@
 import { create } from 'zustand';
 
 type SelectedProduct = {
+  id: number;
   title: string;
-  variants: string[];
+  variants: {
+    id: number;
+    title: string;
+    price: string;
+    quantity: number;
+  }[];
 };
 
 type State = {

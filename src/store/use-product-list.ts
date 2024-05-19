@@ -1,9 +1,24 @@
 import { create } from 'zustand';
 
 type Product = {
-  title?: string;
-  variants?: string[] | { id: number; title: string }[];
+  id: number;
+  title: string;
+  variants: {
+    id: number;
+    title: string;
+    price: string;
+    quantity: number;
+  }[];
+  discount?: {
+    amount: string;
+    type: DiscountType;
+  };
 };
+
+enum DiscountType {
+  percentage = 'percentage',
+  flat = 'flat',
+}
 
 type State = {
   productList: {
