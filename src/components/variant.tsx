@@ -47,8 +47,6 @@ const Variant = ({
         : product
     );
 
-    console.log(updatedProductList);
-
     setProductList(updatedProductList);
   };
 

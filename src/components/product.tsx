@@ -63,8 +63,6 @@ const Product = ({ product, index, totalProducts }: ProductProps) => {
     setShowAddDiscount(false);
   }, [productList]);
 
-  console.log(showAddDiscount, product.discount);
-
   return (
     <li className="flex flex-col gap-3 py-5" ref={setNodeRef} style={style}>
       <div className="flex items-center gap-2 w-full">
