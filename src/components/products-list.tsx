@@ -21,9 +21,12 @@ const ProductsList = () => {
           products.filter((product) => product.id === Number(over?.id))[0]
         );
 
-        return arrayMove(products, oldIndex, newIndex);
+        const updatedProducts = arrayMove(products, oldIndex, newIndex);
+
+        setProductList(updatedProducts);
+
+        return updatedProducts;
       });
-      setProductList(products);
     }
   };
 

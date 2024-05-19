@@ -1,7 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Pencil, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useModal } from '../store/use-modal';
 import { useProductList } from '../store/use-product-list';
 import AddDiscount from './add-discount';
@@ -12,22 +12,38 @@ type ProductProps = {
   product: {
     id: number;
     product?: {
-      title?: string;
-      variants?: string[] | { id: number; title: string }[];
+      id: number;
+      title: string;
+      variants: {
+        id: number;
+        title: string;
+        price: string;
+        quantity: number;
+      }[];
+    };
+    discount?: {
+      amount: string;
+      type: DiscountType;
     };
   };
   index: number;
 };
 
+enum DiscountType {
+  percentage = 'percentage',
+  flat = 'flat',
+}
+
 const Product = ({ product, index, totalProducts }: ProductProps) => {
   const setOpen = useModal((state) => state.setOpen);
+  const setCurrProduct = useModal((state) => state.setCurrProduct);
   const setSelectedProductListId = useProductList(
     (state) => state.setSelectedProductListId
   );
   const productList = useProductList((state) => state.productList);
   const setProductList = useProductList((state) => state.setProductList);
 
-  const [addDiscount, setAddDiscount] = useState(false);
+  const [showAddDiscount, setShowAddDiscount] = useState(false);
 
   const id = product.id;
 
@@ -42,6 +58,12 @@ const Product = ({ product, index, totalProducts }: ProductProps) => {
 
     setProductList(newProductList);
   };
+
+  useEffect(() => {
+    setShowAddDiscount(false);
+  }, [productList]);
+
+  console.log(showAddDiscount, product.discount);
 
   return (
     <li className="flex flex-col gap-3 py-5" ref={setNodeRef} style={style}>
@@ -58,6 +80,7 @@ const Product = ({ product, index, totalProducts }: ProductProps) => {
             onClick={() => {
               setOpen();
               setSelectedProductListId(product.id);
+              setCurrProduct(product.product);
             }}
           >
             <span
@@ -73,12 +96,12 @@ const Product = ({ product, index, totalProducts }: ProductProps) => {
             </span>
             <Pencil className="w-4 h-4 text-green-700" />
           </div>
-          {addDiscount ? (
-            <AddDiscount />
+          {showAddDiscount || product.discount ? (
+            <AddDiscount product={product} id={id} />
           ) : (
             <button
               className="border-2 border-green-700 py-3 px-10 rounded text-sm font-semibold text-white bg-green-700 hover:bg-transparent hover:text-green-700"
-              onClick={() => setAddDiscount(!addDiscount)}
+              onClick={() => setShowAddDiscount(true)}
             >
               Add Discount
             </button>
