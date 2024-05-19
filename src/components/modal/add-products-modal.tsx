@@ -60,7 +60,6 @@ const AddProductsModal = () => {
         currPage === 0
       ) {
         setAllProducts(data);
-        setPrevSearchTerm(searchTerm);
       } else {
         setAllProducts([...allProducts, ...data]);
       }
@@ -69,14 +68,16 @@ const AddProductsModal = () => {
 
     if (
       (!lastProduct && prevPage !== currPage) ||
-      searchTerm !== '' ||
+      (searchTerm !== '' && searchTerm !== prevSearchTerm) ||
       (prevSearchTerm !== '' && searchTerm === '')
     ) {
+      setPrevSearchTerm(searchTerm);
       fetchData();
     }
   }, [
     allProducts,
     currPage,
+    isTyping,
     lastProduct,
     prevPage,
     prevSearchTerm,
