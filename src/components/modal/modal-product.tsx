@@ -18,17 +18,6 @@ const ModalProduct = <T extends Product>({ product }: ModalProductProps<T>) => {
     (state) => state.setSelectedProduct
   );
 
-  // disable other checkboxes if any product checkox is selected or indeterminate
-
-  const selectedProduct = useSelectedProduct((state) => state.selectedProduct);
-
-  const [isAnyProductChecked, setIsAnyProductChecked] = useState(false);
-  const [isCurrProductChecked, setIsCurrProductChecked] = useState(false);
-
-  useEffect(() => {
-    setIsCurrProductChecked(selectedProduct?.title === product.title);
-  }, [product.title, selectedProduct?.title]);
-
   const handleParentChange = () => {
     setParentChecked(!parentChecked);
 
@@ -72,8 +61,6 @@ const ModalProduct = <T extends Product>({ product }: ModalProductProps<T>) => {
             };
           }),
       });
-
-      setIsAnyProductChecked(true);
     }
   }, [
     childChecked,
@@ -110,7 +97,6 @@ const ModalProduct = <T extends Product>({ product }: ModalProductProps<T>) => {
           checked={parentChecked}
           onChange={handleParentChange}
           ref={parentCheckboxRef}
-          disabled={!isCurrProductChecked && isAnyProductChecked}
         />
         <label
           htmlFor={product.id.toString()}
@@ -140,7 +126,6 @@ const ModalProduct = <T extends Product>({ product }: ModalProductProps<T>) => {
                 className="w-5 h-5 accent-green-700"
                 checked={!!childChecked[variant.id.toString()]}
                 onChange={() => handleChildChange(variant.id.toString())}
-                disabled={!isCurrProductChecked && isAnyProductChecked}
               />
               <label
                 htmlFor={variant.id.toString()}
