@@ -55,7 +55,7 @@ const AddProductsModal = () => {
       }
       setPrevPage(currPage);
       if (
-        searchTerm !== '' ||
+        (searchTerm !== '' && currPage === 0) ||
         (prevSearchTerm !== '' && searchTerm === '') ||
         currPage === 0
       ) {
