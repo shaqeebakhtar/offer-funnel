@@ -19,9 +19,12 @@ const AddProductsModal = () => {
   const [isTyping, setIsTyping] = useState(false);
   const productListRef = useRef<HTMLDivElement>(null);
 
-  const selectedProduct = useSelectedProduct((state) => state.selectedProduct);
-  const setSelectedProduct = useSelectedProduct(
-    (state) => state.setSelectedProduct
+  const selectedProducts = useSelectedProduct(
+    (state) => state.selectedProducts
+  );
+
+  const clearSelectedProducts = useSelectedProduct(
+    (state) => state.clearSelectedProducts
   );
 
   const setProductList = useProductList((state) => state.setProductList);
@@ -32,15 +35,53 @@ const AddProductsModal = () => {
   const productList = useProductList((state) => state.productList);
 
   const handleProductListUpdate = () => {
-    if (selectedProduct && selectedProductListId) {
+    if (selectedProducts.length === 1 && selectedProductListId) {
       const updatedProductList = productList.map((item) =>
         item.id === selectedProductListId
-          ? { ...item, product: selectedProduct }
+          ? { ...item, product: selectedProducts[0] }
           : item
       );
       setProductList(updatedProductList);
+    } else if (selectedProducts.length > 1) {
+      let updatedProductList = productList;
+
+      if (selectedProductListId) {
+        updatedProductList = productList.map((item) =>
+          item.id === selectedProductListId
+            ? { ...item, product: selectedProducts[0] }
+            : item
+        );
+
+        const remainingProducts = selectedProducts.slice(1);
+
+        updatedProductList = [
+          ...updatedProductList,
+          ...remainingProducts.map((product, index) => ({
+            id: productList.length + index + 1,
+            product: {
+              id: product.id,
+              title: product.title,
+              variants: product.variants,
+            },
+          })),
+        ];
+      } else {
+        updatedProductList = [
+          ...productList,
+          ...selectedProducts.map((product, index) => ({
+            id: productList.length + index + 1,
+            product: {
+              id: product.id,
+              title: product.title,
+              variants: product.variants,
+            },
+          })),
+        ];
+      }
+      setProductList(updatedProductList);
     }
-    setSelectedProduct(null);
+
+    clearSelectedProducts();
     setOpen();
   };
 
@@ -142,13 +183,16 @@ const AddProductsModal = () => {
           )}
         </div>
         <div className="w-full border-t py-3 px-6 sticky bottom-0 z-10 bg-white shadow-[0_-20px_30px_-10px_rgba(0,0,0,0.1)] flex items-center justify-between">
-          <span>1 product selected</span>
+          <span>
+            {selectedProducts.length} product
+            {selectedProducts.length !== 1 ? 's' : ''} selected
+          </span>
           <div className="space-x-2">
             <button
               className="border-2 py-1.5 px-6 font-semibold text-sm rounded text-gray-500 hover:bg-gray-200"
               onClick={() => {
                 setOpen();
-                setSelectedProduct(null);
+                clearSelectedProducts();
               }}
             >
               Cancel

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { Product } from '../../types/product';
-import { useSelectedProduct } from '../../store/use-selected-product';
 import { useModal } from '../../store/use-modal';
+import { useSelectedProduct } from '../../store/use-selected-product';
+import { Product } from '../../types/product';
 
 type ModalProductProps<T> = {
   product: T;
@@ -14,20 +14,18 @@ const ModalProduct = <T extends Product>({ product }: ModalProductProps<T>) => {
   );
   const parentCheckboxRef = useRef<HTMLInputElement>(null);
 
-  const setSelectedProduct = useSelectedProduct(
-    (state) => state.setSelectedProduct
+  const selectedProducts = useSelectedProduct(
+    (state) => state.selectedProducts
   );
-
-  // disable other checkboxes if any product checkox is selected or indeterminate
-
-  const selectedProduct = useSelectedProduct((state) => state.selectedProduct);
-
-  const [isAnyProductChecked, setIsAnyProductChecked] = useState(false);
-  const [isCurrProductChecked, setIsCurrProductChecked] = useState(false);
-
-  useEffect(() => {
-    setIsCurrProductChecked(selectedProduct?.title === product.title);
-  }, [product.title, selectedProduct?.title]);
+  const setSelectedProducts = useSelectedProduct(
+    (state) => state.setSelectedProducts
+  );
+  const removeSelectedProduct = useSelectedProduct(
+    (state) => state.removeSelectedProduct
+  );
+  const updateSelectedProductVariants = useSelectedProduct(
+    (state) => state.updateSelectedProductVariants
+  );
 
   const handleParentChange = () => {
     setParentChecked(!parentChecked);
@@ -46,6 +44,8 @@ const ModalProduct = <T extends Product>({ product }: ModalProductProps<T>) => {
     }));
   };
 
+  const currProduct = useModal((state) => state.currProduct);
+
   useEffect(() => {
     const totalChildren = product.variants?.length || 0;
     const checkedChildren = Object.values(childChecked).filter(Boolean).length;
@@ -57,8 +57,12 @@ const ModalProduct = <T extends Product>({ product }: ModalProductProps<T>) => {
 
     setParentChecked(totalChildren === checkedChildren);
 
-    if (checkedChildren > 0) {
-      setSelectedProduct({
+    if (
+      checkedChildren > 0 &&
+      currProduct?.id !== product.id &&
+      !selectedProducts.find((p) => p.id === product.id)
+    ) {
+      setSelectedProducts({
         id: product.id,
         title: product.title,
         variants: product.variants
@@ -72,32 +76,38 @@ const ModalProduct = <T extends Product>({ product }: ModalProductProps<T>) => {
             };
           }),
       });
-
-      setIsAnyProductChecked(true);
+    } else if (
+      checkedChildren > 0 &&
+      selectedProducts.find((p) => p.id === product.id)
+    ) {
+      updateSelectedProductVariants(
+        product.id,
+        product.variants
+          .filter((variant) => childChecked[variant.id])
+          .map((variant) => ({
+            id: variant.id,
+            title: variant.title,
+            price: variant.price,
+            quantity: variant.inventory_quantity,
+          }))
+      );
+    } else if (
+      (checkedChildren > 0 && currProduct?.id === product.id) ||
+      checkedChildren === 0
+    ) {
+      removeSelectedProduct(product.id);
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     childChecked,
-    product.title,
     product.id,
     product.variants,
-    setSelectedProduct,
+    product.title,
+    setSelectedProducts,
+    removeSelectedProduct,
+    currProduct,
   ]);
-
-  // initialize childChecked based on currProduct
-  const currProduct = useModal((state) => state.currProduct);
-
-  useEffect(() => {
-    if (currProduct?.id === product.id) {
-      const initialChildChecked = Object.fromEntries(
-        product.variants?.map((variant) => [
-          variant.id,
-          currProduct.variants?.some((v) => v.id === variant.id) || false,
-        ]) || []
-      );
-      setChildChecked(initialChildChecked);
-      setParentChecked(Object.values(initialChildChecked).every(Boolean));
-    }
-  }, [currProduct, product.id, product.variants]);
 
   return (
     <>
@@ -110,7 +120,6 @@ const ModalProduct = <T extends Product>({ product }: ModalProductProps<T>) => {
           checked={parentChecked}
           onChange={handleParentChange}
           ref={parentCheckboxRef}
-          disabled={!isCurrProductChecked && isAnyProductChecked}
         />
         <label
           htmlFor={product.id.toString()}
@@ -140,7 +149,6 @@ const ModalProduct = <T extends Product>({ product }: ModalProductProps<T>) => {
                 className="w-5 h-5 accent-green-700"
                 checked={!!childChecked[variant.id.toString()]}
                 onChange={() => handleChildChange(variant.id.toString())}
-                disabled={!isCurrProductChecked && isAnyProductChecked}
               />
               <label
                 htmlFor={variant.id.toString()}
