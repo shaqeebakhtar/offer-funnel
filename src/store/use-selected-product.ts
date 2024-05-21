@@ -12,17 +12,41 @@ type SelectedProduct = {
 };
 
 type State = {
-  selectedProduct: SelectedProduct | null;
+  selectedProducts: SelectedProduct[];
 };
 
 type Action = {
-  setSelectedProduct: (product: State['selectedProduct']) => void;
+  setSelectedProducts: (product: SelectedProduct) => void;
+  removeSelectedProduct: (productId: number) => void;
+  clearSelectedProducts: () => void;
+  updateSelectedProductVariants: (
+    productId: number,
+    newVariants: SelectedProduct['variants']
+  ) => void;
 };
 
 export const useSelectedProduct = create<State & Action>((set) => ({
-  selectedProduct: null,
-  setSelectedProduct: (product: State['selectedProduct']) =>
-    set(() => ({
-      selectedProduct: product,
+  selectedProducts: [],
+  setSelectedProducts: (product: SelectedProduct) =>
+    set((state) => ({
+      selectedProducts: [...state.selectedProducts, product],
+    })),
+  removeSelectedProduct: (productId: number) =>
+    set((state) => ({
+      selectedProducts: state.selectedProducts.filter(
+        (product) => product.id !== productId
+      ),
+    })),
+  clearSelectedProducts: () => set(() => ({ selectedProducts: [] })),
+  updateSelectedProductVariants: (
+    productId: number,
+    newVariants: SelectedProduct['variants']
+  ) =>
+    set((state) => ({
+      selectedProducts: state.selectedProducts.map((product) =>
+        product.id === productId
+          ? { ...product, variants: newVariants }
+          : product
+      ),
     })),
 }));
